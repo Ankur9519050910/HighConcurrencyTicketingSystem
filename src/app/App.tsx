@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Clock, AlertCircle, Check, X, Zap, TrendingUp, Trash2, RotateCcw } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
@@ -26,7 +25,7 @@ interface LogEntry {
 
 const ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 const SEATS_PER_ROW = 10;
-const BOOKING_TIME_LIMIT = 300; 
+const BOOKING_TIME_LIMIT = 300;
 
 const TIER_CONFIG: Record<SeatTier, { price: number; color: string; glowColor: string; label: string }> = {
   vip: { price: 12000, color: 'border-yellow-500', glowColor: 'shadow-yellow-500/50', label: 'VIP' },
@@ -49,11 +48,11 @@ export default function App() {
   const [logCounter, setLogCounter] = useState(0);
   const [isBooking, setIsBooking] = useState(false);
   const [recentSoldCount, setRecentSoldCount] = useState(0);
-  
+
   // NEW STATES
   const [devMode, setDevMode] = useState(false);
   const [shakingSeat, setShakingSeat] = useState<string | null>(null);
-  const [isSessionExpired, setIsSessionExpired] = useState(false); 
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [myUserId] = useState(() => Math.floor(Math.random() * 10000) + 1);
 
   // Initialize
@@ -98,16 +97,16 @@ export default function App() {
       try {
         const res = await fetch('http://localhost:3001/api/seats');
         const data = await res.json();
-        
+
         if (data.seats) {
           const serverSeats: Seat[] = data.seats;
-          
+
           setSeats((currentSeats) => {
              if (currentSeats.length === 0) return serverSeats;
 
              return serverSeats.map(serverSeat => {
                 const currentSeat = currentSeats.find(s => s.id === serverSeat.id);
-                
+
                 // Preserve my selection if valid
                 if (currentSeat?.state === 'selected' && serverSeat.state !== 'booked') {
                     return { ...serverSeat, state: 'selected', lockedBy: myUserId };
@@ -131,7 +130,7 @@ export default function App() {
     };
 
     fetchStadium();
-    const interval = setInterval(fetchStadium, 500); 
+    const interval = setInterval(fetchStadium, 500);
     return () => clearInterval(interval);
   }, [myUserId]);
 
@@ -162,7 +161,7 @@ export default function App() {
     if (selectedSeats.includes(seatId)) {
         setSelectedSeats((prev) => prev.filter((id) => id !== seatId));
         setSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, state: 'available', lockedBy: undefined } : s)));
-        
+
         await fetch('http://localhost:3001/api/release', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -183,13 +182,13 @@ export default function App() {
 
         if (response.ok && data.success) {
             setSelectedSeats((prev) => [...prev, seatId]);
-            setSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, state: 'selected', lockedBy: myUserId } : s))); 
+            setSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, state: 'selected', lockedBy: myUserId } : s)));
             toast.success(`Seat Locked! 5:00 timer started.`);
         } else {
             setShakingSeat(seatId);
             setTimeout(() => setShakingSeat(null), 500);
-            
-            setSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, state: 'booked' } : s))); 
+
+            setSeats((prev) => prev.map((s) => (s.id === seatId ? { ...s, state: 'booked' } : s)));
             toast.error("Too Slow! Seat just taken.");
         }
     } catch (error) {
@@ -200,7 +199,7 @@ export default function App() {
   // ✅ FIX: MANUALLY UPDATE SEAT STATE TO 'AVAILABLE'
   const handleReset = async () => {
     // 1. Release all on server
-    await Promise.all(selectedSeats.map(seatId => 
+    await Promise.all(selectedSeats.map(seatId =>
         fetch('http://localhost:3001/api/release', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -210,7 +209,7 @@ export default function App() {
 
     // 2. FORCE UPDATE local state to 'available' immediately
     // This stops the polling logic from "preserving" the selection
-    setSeats((prev) => prev.map((s) => 
+    setSeats((prev) => prev.map((s) =>
         selectedSeats.includes(s.id) ? { ...s, state: 'available', lockedBy: undefined } : s
     ));
 
@@ -270,7 +269,7 @@ export default function App() {
   };
 
   const calculateTotal = () => selectedSeats.reduce((sum, id) => sum + (seats.find(s => s.id === id)?.price || 0), 0);
-  
+
   const getSelectedSeatsByTier = () => {
     const breakdown: Record<SeatTier, string[]> = { vip: [], premium: [], standard: [] };
     selectedSeats.forEach((seatId) => {
@@ -285,7 +284,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-white p-4 md:p-6 overflow-hidden relative">
       <Toaster position="top-center" theme="dark" richColors />
-      
+
       {/* SESSION EXPIRED OVERLAY */}
       {isSessionExpired && (
         <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
@@ -297,7 +296,7 @@ export default function App() {
                 <p className="text-gray-400 mb-8">
                     Your 5-minute booking window has closed. High-demand events require strict time limits to ensure fairness for all fans.
                 </p>
-                <button 
+                <button
                     onClick={handleRefreshSession}
                     className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all"
                 >
@@ -321,7 +320,7 @@ export default function App() {
                 <span>DY Patil Stadium • March 15, 2026</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 md:gap-4">
               <div className="backdrop-blur-xl bg-white/5 border border-red-500/30 rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg shadow-red-500/20">
                 <div className="relative">
@@ -356,9 +355,9 @@ export default function App() {
             <div className="flex justify-end mb-4">
                 <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-white/10">
                     <span className="text-xs font-mono text-gray-400">DEV MODE</span>
-                    <input 
-                        type="checkbox" 
-                        checked={devMode} 
+                    <input
+                        type="checkbox"
+                        checked={devMode}
                         onChange={(e) => setDevMode(e.target.checked)}
                         className="accent-green-500 w-4 h-4 cursor-pointer"
                     />
@@ -372,14 +371,14 @@ export default function App() {
                 </span>
               </div>
             </div>
-            
+
             <div className="relative mb-6">
               <div className="grid grid-cols-10 gap-1">
                 {seats.map((seat) => {
                 const tierConfig = TIER_CONFIG[seat.tier];
                 const isMyLock = seat.lockedBy === myUserId;
                 const isAvailable = seat.state === 'available';
-                const isBooked = seat.state === 'booked'; 
+                const isBooked = seat.state === 'booked';
                 const isSelected = selectedSeats.includes(seat.id) || isMyLock;
                 const isShaking = shakingSeat === seat.id;
 
@@ -387,11 +386,11 @@ export default function App() {
                   <button
                     key={seat.id}
                     onClick={() => handleSeatClick(seat.id)}
-                    disabled={isBooked} 
+                    disabled={isBooked}
                     className={`
                       h-7 md:h-9 rounded-md transition-all duration-200 text-xs font-mono relative flex items-center justify-center
                       ${isShaking ? 'animate-shake border-red-500 border-2' : ''}
-                      
+
                       ${isAvailable ? `bg-white/5 border-2 ${tierConfig.color} hover:bg-gradient-to-br hover:shadow-lg ${tierConfig.glowColor} hover:scale-110` : ''}
                       ${isSelected ? 'bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-cyan-400 scale-105 shadow-lg shadow-cyan-500/50 z-10' : ''}
                       ${isBooked ? 'bg-red-950/40 border border-red-900/50 opacity-50 cursor-not-allowed' : ''}
@@ -421,7 +420,7 @@ export default function App() {
               })}
               </div>
             </div>
-            
+
           </div>
         </div>
 
@@ -430,7 +429,7 @@ export default function App() {
             <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
               Checkout
             </h2>
-            
+
             {/* Urgency Alert */}
             {recentSoldCount > 0 && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2 animate-pulse">
@@ -441,7 +440,7 @@ export default function App() {
                 </div>
               </div>
             )}
-            
+
             {/* Selected Seats Breakdown */}
             <div className="mb-6">
               <div className="text-sm text-gray-400 mb-3 uppercase tracking-wider">Selected Seats</div>
@@ -476,7 +475,7 @@ export default function App() {
                 </div>
               )}
             </div>
-            
+
             {/* Total Price */}
             <div className="border-t border-white/20 pt-4 mb-6">
               <div className="flex justify-between items-center text-sm mb-2">
@@ -494,7 +493,7 @@ export default function App() {
                 </span>
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <button
               onClick={handleBookNow}
@@ -508,7 +507,7 @@ export default function App() {
                 </>
               )}
             </button>
-            
+
             <button
               onClick={handleReset}
               disabled={selectedSeats.length === 0}
@@ -519,7 +518,7 @@ export default function App() {
             </button>
 
              {/* ADMIN KILL SWITCH */}
-             <button 
+             <button
                 onClick={handleResetDB}
                 className="mt-6 w-full group relative overflow-hidden bg-red-950/30 border border-red-500/30 hover:bg-red-900/50 text-red-400 hover:text-red-200 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-widest transition-all"
             >
