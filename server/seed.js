@@ -3,7 +3,8 @@ const Seat = require('./models/Seat');
 const { createClient } = require('redis');
 
 // CONFIG
-const MONGO_URI = 'mongodb+srv://roomiesofficial522_db_user:dznq0cmN9zOJtvLj@ticket-master.f3wpttq.mongodb.net/?appName=ticket-master'; 
+require('dotenv').config();
+const MONGO_URI = process.env.MONGO_URI;
 const ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 const COLS = 10;
 
