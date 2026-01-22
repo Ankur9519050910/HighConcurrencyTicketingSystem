@@ -1,7 +1,7 @@
 
 ## Technical Workflow Architecture
 
-The core of FlashSeat is a **Hybrid Locking Engine** that decouples high-speed concurrency controls from durable data storage.
+The core of TicketS is a **Hybrid Locking Engine** that decouples high-speed concurrency controls from durable data storage.
 
 ### The Master Flowchart
 This diagram represents the exact lifecycle of a request in our system.
