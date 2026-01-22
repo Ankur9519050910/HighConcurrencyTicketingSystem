@@ -62,7 +62,69 @@ graph TD
     MongoSeat -->|Set 'booked'| MongoTx
     
     MongoTx --"Commit"--> RedisCleanup[7. Redis Cleanup]
-    RedisCleanup -->|DEL seat:A1| RedisLock
     RedisCleanup -->|SET receipt:XYZ| RedisReceipt
     
     RedisReceipt --> UserSuccess
+```
+```mermaid
+sequenceDiagram
+    participant User as Client (React)
+    participant API as API (Node.js)
+    participant Redis as Redis (In-Memory)
+    participant Mongo as MongoDB (The Vault)
+
+    Note over User, Redis: PHASE 1: THE ATOMIC LOCK (High-Speed)
+
+    User->>API: POST /api/lock {seatId: "A1"}
+    
+    rect rgb(50, 30, 20)
+        Note right of API: Middleware Check
+        API->>API: 1. Rate Limiter (10 req/s?)
+        API->>API: 2. Auth Token Valid?
+    end
+
+    alt Blocked / Invalid
+        API-->>User: 429 Too Many Requests / 401 Unauthorized
+    else Allowed
+        API->>Redis: EVAL(LOCK_SCRIPT, seatId, userId)
+        activate Redis
+        Redis->>Redis: Check EXISTS seat:A1
+        
+        alt Seat Taken
+            Redis-->>API: Return 0
+            API-->>User: 409 Conflict (Seat Unavailable)
+        else Seat Free
+            Redis->>Redis: SET seat:A1 = LOCKED:User (TTL 5m)
+            Redis-->>API: Return 1
+            deactivate Redis
+            API-->>User: 200 OK (Locked!)
+        end
+    end
+
+    Note over User, Mongo: PHASE 2: THE IDEMPOTENT PAYMENT (Reliability)
+
+    User->>API: POST /api/pay {seatId, idempotencyKey}
+    
+    API->>Redis: GET receipt:{idempotencyKey}
+    
+    alt Receipt Found (Replay)
+        Redis-->>API: Return Cached Receipt
+        API-->>User: 200 OK (Payment Successful - Cached)
+    else New Transaction
+        API->>Redis: GET seat:A1 (Check Lock)
+        
+        alt Lock Missing / Wrong User
+            API-->>User: 400 Bad Request (Lock Expired)
+        else Lock Valid
+            Note right of API: Start ACID Transaction
+            API->>Mongo: Session.startTransaction()
+            API->>Mongo: Seat.updateOne(status: "booked")
+            
+           
+            
+            API->>Mongo: Commit Transaction()
+            
+            API->>Redis: SET receipt:{key} (Cache Success)
+            API-->>User: 200 OK (Ticket Confirmed!)
+        end
+    end
