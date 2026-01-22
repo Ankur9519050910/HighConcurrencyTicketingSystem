@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Clock, AlertCircle, Check, X, Zap, TrendingUp, Trash2, RotateCcw } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
@@ -50,7 +49,7 @@ export default function App() {
   const [isBooking, setIsBooking] = useState(false);
   const [recentSoldCount, setRecentSoldCount] = useState(0);
   
-  // NEW STATES
+  // new status for the new users 
   const [devMode, setDevMode] = useState(false);
   const [shakingSeat, setShakingSeat] = useState<string | null>(null);
   const [isSessionExpired, setIsSessionExpired] = useState(false); 
@@ -92,7 +91,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 🔄 REAL-TIME SYNC ENGINE (High Frequency)
+  // real time sync data 
   useEffect(() => {
     const fetchStadium = async () => {
       try {
@@ -197,7 +196,7 @@ export default function App() {
     }
   };
 
-  // ✅ FIX: MANUALLY UPDATE SEAT STATE TO 'AVAILABLE'
+  // FIX: MANUALLY UPDATE SEAT STATE TO 'AVAILABLE'
   const handleReset = async () => {
     // 1. Release all on server
     await Promise.all(selectedSeats.map(seatId => 
@@ -519,6 +518,7 @@ export default function App() {
             </button>
 
              {/* ADMIN KILL SWITCH */}
+
              <button 
                 onClick={handleResetDB}
                 className="mt-6 w-full group relative overflow-hidden bg-red-950/30 border border-red-500/30 hover:bg-red-900/50 text-red-400 hover:text-red-200 py-3 px-4 rounded-xl font-mono text-xs uppercase tracking-widest transition-all"
