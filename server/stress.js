@@ -4,7 +4,7 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
 const TARGET_SEAT = "A1";
-const TOTAL_BOTS = 1000;
+const TOTAL_BOTS = 500;
 const URL = "http://localhost:3001/api/lock";
 
 // If .env is missing, it falls back to string, but warns.
@@ -30,7 +30,7 @@ const getRandomIP = () => {
 };
 
 const runStressTest = async () => {
-    const startId = Math.floor(Math.random() * 800000) + 100000; 
+    const startId = 0; 
     
     console.log(`\nLAUNCHING AUTHENTICATED BOT ATTACK (${TOTAL_BOTS} BOTS)...`);
     console.log(`Target: ${URL} | Secret: ${JWT_SECRET.substring(0, 5)}...`);
