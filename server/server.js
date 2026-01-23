@@ -207,14 +207,36 @@ app.post('/api/lock', limiter, authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const seatKey = `seat:${seatId}`;
     
+    // 1. Start High-Precision Timer
+    const start = process.hrtime();
+
+        const arrivalTime = new Date().toISOString(); 
+    
+
     try {
         const result = await redisClient.eval(LOCK_SCRIPT, {
             keys: [seatKey],
             arguments: [String(userId), String(REDIS_TTL)]
         });
-        if (result === 1) res.json({ success: true });
-        else res.status(409).json({ success: false, message: "Seat Unavailable" });
-    } catch (err) { res.status(500).json({ error: "Lock Error" }); }
+
+        // 2. Stop Timer & Calculate Duration
+        const end = process.hrtime(start);
+        const executionTime = (end[0] * 1000 + end[1] / 1e6).toFixed(3);
+
+        if (result === 1) {
+        
+            console.log(`\n⚡ [WINNER] User ${userId} secured ${seatId} in ${executionTime}ms`);
+            
+            res.json({ success: true, timeMs: executionTime });
+        }
+        else {
+            
+            res.status(409).json({ success: false, message: "Seat Unavailable", timeMs: executionTime });
+        }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: "Lock Error" }); 
+    }
 });
 
 app.post('/api/pay', authenticateToken, async (req, res) => {
