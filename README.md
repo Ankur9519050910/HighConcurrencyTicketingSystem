@@ -39,9 +39,8 @@ We implemented a **Header-Based Rate Limiter** that identifies users behind prox
 * **Zero Overbooking:** Physical guarantee that two users cannot hold the same Redis key.
 * **TTL (Time-To-Live):** Locks automatically expire after 5 minutes, releasing the seat if payment is not completed.
 
-### Idempotent Payment & State Cleanup
+### Idempotent Payment
 * **Double-Charge Protection:** We use a unique `idempotencyKey` to cache receipt data. If a user clicks "Pay" twice, they receive the cached success response without being charged again.
-* **Smart Memory Management:** Upon successful payment, the Redis lock is **deleted instantly** (instead of storing a "SOLD" flag), forcing the system to fall back to MongoDB as the single source of truth.
 
 ### Live Inventory Synchronization
 * **The Problem:** In a flash sale, static pages lead to user frustration when they click a seat that was taken 5 seconds ago.
