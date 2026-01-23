@@ -66,6 +66,10 @@ graph TD
     
     RedisReceipt --> UserSuccess
 ```
+
+# Sequence Diagram
+
+
 ```mermaid
 sequenceDiagram
     participant User as Client (React)
