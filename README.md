@@ -42,10 +42,6 @@ We implemented a **Header-Based Rate Limiter** that identifies users behind prox
 ### Idempotent Payment
 * **Double-Charge Protection:** We use a unique `idempotencyKey` to cache receipt data. If a user clicks "Pay" twice, they receive the cached success response without being charged again.
 
-### Live Inventory Synchronization
-* **The Problem:** In a flash sale, static pages lead to user frustration when they click a seat that was taken 5 seconds ago.
-* **The Solution:** The UI implements **High-Frequency State Syncing**. When User A locks a seat, the status instantly flips to `LOCKED` (Black) for User B, C, and D.
-* **Result:** Visual consistency across thousands of concurrent screens, reducing "Click-Fail" rage.
 
 ---
 
